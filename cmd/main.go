@@ -26,8 +26,9 @@ func main() {
 	headerKey := os.Getenv("HEADER_KEY")
 
 	notifProviders := notification.InitProviders()
+	strategies := strategy.InitStrategies()
 
-	c := client.Client{
+	c := client.Binance{
 		ApiUrl:    apiUrl,
 		ApiKey:    apiKey,
 		ApiSecret: apiSecret,
@@ -41,14 +42,13 @@ func main() {
 			log.Fatalf("Fetching data failed: %v", err)
 		}
 
-		signal, _ := strategy.GenSignal(candles)
-
-		log.Printf("SIGNAL: %v\n", signal)
-
-		if signal.Action != strategy.BUY {
-			errors := notification.Run(signal.Reason, notifProviders)
-			notification.ProcessErrors(errors)
-		}
+		signals := strategy.Run(strategies, candles)
+		strategy.ProcessSignals(signals, func(s strategy.Signal) {
+			if s.Action == strategy.BUY {
+				errors := notification.Run(s.Reason, notifProviders)
+				notification.ProcessErrors(errors)
+			}
+		})
 
 		time.Sleep(time.Second * 5)
 	}

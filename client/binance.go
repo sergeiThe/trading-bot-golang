@@ -9,17 +9,15 @@ import (
 	"trading-bot/utils"
 )
 
-type Client struct {
+
+type Binance struct {
 	ApiUrl    string // TODO: Configure
 	ApiKey    string
 	ApiSecret string
 	HeaderKey string
 }
 
-func (c *Client) FetchData() ([]models.Candle, error) {
-	// return crypto.createHmac("sha256", secret).update(query).digest("hex");
-	// const query = `symbol=${symbol}&interval=${interval}&limit=${limit}`;
-	// [1748721600000,"104759.99000000","104852.94000000","104587.56000000","104834.02000000","94.23678000",1748725199999,"9868701.04692010",5847,"45.82295000","4800587.52146740","0"]
+func (c *Binance) FetchData() ([]models.Candle, error) {
 	// TODO: This should come from outside
 	symbol := "BTCUSDC"
 	interval := "1h"
