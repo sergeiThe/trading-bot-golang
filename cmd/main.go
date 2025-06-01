@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 	"trading-bot/client"
 	"trading-bot/notification"
 	"trading-bot/strategy"
@@ -23,7 +24,8 @@ func main() {
 	apiUrl := os.Getenv("API_URL")
 	apiSecret := os.Getenv("API_SECRET")
 	headerKey := os.Getenv("HEADER_KEY")
-	discordWH := os.Getenv("DISCORD_WEBHOOK")
+
+	notifProviders := notification.InitProviders()
 
 	c := client.Client{
 		ApiUrl:    apiUrl,
@@ -32,18 +34,22 @@ func main() {
 		HeaderKey: headerKey,
 	}
 
-	candles, err := c.FetchData()
-	if err != nil {
-		log.Fatalf("Fetching data failed: %v", err)
-	}
+	for {
+		candles, err := c.FetchData()
 
-	signal, _ := strategy.GenSignal(candles)
+		if err != nil {
+			log.Fatalf("Fetching data failed: %v", err)
+		}
 
-	log.Printf("SIGNAL: %v\n", signal)
+		signal, _ := strategy.GenSignal(candles)
 
-	webhookUrl := discordWH
-	err = notification.SendDiscordNotification(webhookUrl, signal.Reason)
-	if err != nil {
-		log.Println("Failed to send Discord notification:", err)
+		log.Printf("SIGNAL: %v\n", signal)
+
+		if signal.Action != strategy.BUY {
+			errors := notification.Run(signal.Reason, notifProviders)
+			notification.ProcessErrors(errors)
+		}
+
+		time.Sleep(time.Second * 5)
 	}
 }

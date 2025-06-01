@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"trading-bot/models"
+	"trading-bot/utils"
 )
 
 type Client struct {
@@ -64,10 +64,10 @@ func parseKlines(klines [][]any) []models.Candle {
 	for i := range klines {
 		kline := klines[i]
 		candle := models.Candle{
-			Open:  parseStrToFloat(kline[1]),
-			High:  parseStrToFloat(kline[2]),
-			Low:   parseStrToFloat(kline[3]),
-			Close: parseStrToFloat(kline[4]),
+			Open:  utils.ParseStrToFloat(kline[1]),
+			High:  utils.ParseStrToFloat(kline[2]),
+			Low:   utils.ParseStrToFloat(kline[3]),
+			Close: utils.ParseStrToFloat(kline[4]),
 		}
 		candles = append(candles, candle)
 	}
@@ -75,7 +75,3 @@ func parseKlines(klines [][]any) []models.Candle {
 }
 
 
-func parseStrToFloat(v any) float64 {
-	f, _ := strconv.ParseFloat(v.(string), 64)
-	return f
-}
